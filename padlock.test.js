@@ -1,6 +1,3 @@
-const { expect, test } = require('@jest/globals');
-const { type } = require('os');
-const { reset } = require('yargs');
 var lock = require('./padlock');
 
 function typeSequence(digitString) {
