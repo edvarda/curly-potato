@@ -1,0 +1,17 @@
+{
+  "name": "mindmorepadlock",
+  "version": "1.0.0",
+  "description": "coding assignment for technical interview",
+  "main": "padlock.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Edvard Ahlsén",
+  "license": "ISC",
+  "dependencies": {
+    "jest": "^26.6.3"
+  },
+  "jest": {
+    "verbose": true
+  }
+}
