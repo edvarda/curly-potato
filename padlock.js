@@ -13,100 +13,93 @@ const states = {
   locked: {
     name: 'locked',
     isLocked: true,
-    digitToCheck: 0, // TODO refactor
-    transition: function (digit) {
-      if (this.acceptInput(digit)) {
-        if (this.onLastDigit()) {
-          setState(states.unlocked);
+    enteredDigits: '',
+    getNextState: function (digit) {
+      let candidateCode = this.enteredDigits.concat(digit);
+      if (acceptInput(code, candidateCode)) {
+        if (correctCode(code, candidateCode)) {
+          return states.unlocked;
         } else {
-          setState(states.locked, { digitToCheck: this.digitToCheck + 1 });
+          return { ...states.locked, enteredDigits: candidateCode };
         }
-      } else if (this.digitToCheck != 0) {
-        this.digitToCheck = 0;
-        this.transition(digit);
+      } else if (this.enteredDigits.length > 1) {
+        return { ...states.locked, enteredDigits: this.enteredDigits.substring(1) }.getNextState(
+          digit,
+        );
       } else {
-        setState(states.locked);
+        return { ...states.locked, enteredDigits: '' };
       }
-    },
-    onLastDigit: function () {
-      return this.digitToCheck >= code.length - 1;
-    },
-    acceptInput: function (digit) {
-      return code[this.digitToCheck] == digit;
     },
   },
   unlocked: {
     name: 'unlocked',
     isLocked: false,
-    transition: function (digit) {
-      if (this.acceptInput(digit)) {
-        setState(states.enteringProgrammingCode);
+    getNextState: function (digit) {
+      if (acceptInput(programmingCode, digit)) {
+        return { ...states.enteringProgrammingCode, enteredDigits: digit };
       } else {
-        setState(states.locked);
+        return states.locked;
       }
-    },
-    acceptInput: function (digit) {
-      return programmingCode[0] == digit;
     },
   },
   enteringProgrammingCode: {
     name: 'enteringProgrammingCode',
     isLocked: true,
-    digitToCheck: 1, // TODO refactor
-    transition: function (digit) {
-      if (this.acceptInput(digit)) {
-        if (this.onLastDigit()) {
-          setState(states.programming);
+    enteredDigits: '',
+    getNextState: function (digit) {
+      let candidateCode = this.enteredDigits.concat(digit);
+      if (acceptInput(programmingCode, candidateCode)) {
+        if (correctCode(programmingCode, candidateCode)) {
+          return states.programming;
         } else {
-          setState(states.enteringProgrammingCode, { digitToCheck: this.digitToCheck + 1 });
+          return { ...states.enteringProgrammingCode, enteredDigits: candidateCode };
         }
       } else {
-        setState(states.locked);
+        return states.locked;
       }
-    },
-    acceptInput: function (digit) {
-      return programmingCode[this.digitToCheck] == digit;
-    },
-    onLastDigit: function () {
-      return this.digitToCheck >= code.length - 1;
     },
   },
   programming: {
     name: 'programming',
     isLocked: true,
-    newCode: '',
-    transition: function (digit) {
-      let newCode = this.newCode.concat(digit);
+    enteredDigits: '',
+    getNextState: function (digit) {
+      const candidateCode = this.enteredDigits.concat(digit);
 
-      if (this.digitsLeftToEnter(newCode)) {
-        setState(states.programming, { newCode });
+      if (candidateCode.length < code.length) {
+        return { ...states.programming, enteredDigits: candidateCode };
       } else {
-        if (this.acceptInput(newCode)) {
-          setNewCode(newCode);
+        if (validLockCode(candidateCode)) {
+          return {
+            ...states.locked,
+            onEnter: () => {
+              setNewCode(candidateCode);
+            },
+          };
         }
-        setState(states.locked);
+        return states.locked;
       }
-    },
-    acceptInput: function (newCode) {
-      return newCode != programmingCode;
-    },
-    digitsLeftToEnter: function (newCode) {
-      return code.length - newCode.length;
     },
   },
 };
 
-const setState = (newState, subState = {}) => {
-  newState != undefined ? (state = { ...newState, ...subState }) : setState(initialState);
+const acceptInput = (code, candidateCode) =>
+  code.substring(0, candidateCode.length) === candidateCode;
+
+const validLockCode = (candidateCode) => candidateCode != programmingCode;
+
+const correctCode = (code, candidateCode) => code === candidateCode;
+
+const triggerTransitionEffect = (state) => ('onEnter' in state ? state.onEnter() : null);
+
+const transitionState = (digit) => {
+  state = state.getNextState(digit);
+  triggerTransitionEffect(state);
 };
 
-const setNewCode = (newCode) => {
-  code = newCode;
-};
+const setNewCode = (newCode) => (code = newCode);
 
-const typeDigit = (digit) => {
-  state.transition(digit);
-};
+const typeDigit = (digit) => transitionState(digit);
 
 const initialState = states.locked;
 const status = () => state.name;
