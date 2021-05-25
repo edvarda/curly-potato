@@ -1,10 +1,3 @@
-/*
-Mindes KMP-automaterna från skolan.Tänkte att jag skulle börja innan jag läste nåt.
-Först började jag skriva en FSM. Jag började snabbt googla på module pattern i JS.
-Efter en stund tyckte jag att det kändes oklart att ha ett tillstånd för varje korrekt inmatad siffra, 
-samt motsvarande för del 2. Då läste jag wikipedia för FSM, och insåg att det kallades för en acceptor det jag gjorde.
-Sen bestämde jag mig för att inte teorisera mer utan bara skriva nåt som funkar.
-*/
 const defaultCode = '1234';
 const programmingCode = '9999';
 var code, state;
